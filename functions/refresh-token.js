@@ -1,27 +1,34 @@
-exports.handler = async () => {
-  try {
-    const response = await fetch(
-      `https://app.teamleader.eu/oauth2/access_token?
-      client_id=${process.env.TEAMLEADER_CLIENT_ID}&
-      client_secret=${process.env.TEAMLEADER_CLIENT_SECRET}&
-      grant_type=refresh_token&
-      refresh_token=${process.env.TEAMLEADER_REFRESH_TOKEN}
-    `,
-      {
-        method: 'POST',
-        mode: 'no-cors',
-      },
-    );
+const https = require('https');
+const data = JSON.stringify({
+  client_id: process.env.TEAMLEADER_CLIENT_ID,
+  client_secret: process.env.TEAMLEADER_CLIENT_SECRET,
+  grant_type: 'refresh_token',
+  refresh_token: process.env.TEAMLEADER_REFRESH_TOKEN,
+});
 
-    process.env.TEAMLEADER_REFRESH_TOKEN = response.refresh_token;
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ token: response.access_token }),
-    };
-  } catch (err) {
-    return {
-      statusCode: 400,
-      body: `Webhook Error: ${err.message}`,
-    };
-  }
+const options = {
+  hostname: 'https://app.teamleader.eu',
+  path: '/oauth2/access_token',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Length': data.length,
+  },
+};
+
+exports.handler = async () => {
+  const req = https.request(options, res => {
+    console.log(`statusCode: ${res.statusCode}`);
+
+    res.on('data', d => {
+      process.stdout.write(d);
+    });
+  });
+
+  req.on('error', error => {
+    console.error(error);
+  });
+
+  req.write(data);
+  req.end();
 };
