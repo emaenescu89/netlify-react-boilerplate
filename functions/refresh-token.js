@@ -7,7 +7,10 @@ exports.handler = async () => {
       grant_type=refresh_token&
       refresh_token=${process.env.TEAMLEADER_REFRESH_TOKEN}
     `,
-      { mode: 'no-cors' },
+      {
+        method: 'POST',
+        mode: 'no-cors',
+      },
     );
 
     process.env.TEAMLEADER_REFRESH_TOKEN = response.refresh_token;
