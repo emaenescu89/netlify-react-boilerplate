@@ -53,7 +53,7 @@ export function HomePage({
       'https://peaceful-kirch-85c108.netlify.app/.netlify/functions/refresh-token',
       { method: 'POST', mode: 'no-cors' },
     ).then(response => {
-      console.log(response);
+      console.log(response, 'heyhey');
     });
   }, []);
 
