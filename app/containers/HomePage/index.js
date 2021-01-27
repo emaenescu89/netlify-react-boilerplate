@@ -32,7 +32,7 @@ import { changeUsername } from './actions';
 import { makeSelectUsername } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
-
+import Teamleader from '../../utils/teamleader';
 const key = 'home';
 
 export function HomePage({
@@ -45,16 +45,12 @@ export function HomePage({
 }) {
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
+  const teamleader = Teamleader();
 
-  useEffect(() => {
+  useEffect( () => {
     // When initial state username is not null, submit the form to load repos
     if (username && username.trim().length > 0) onSubmitForm();
-    fetch(
-      'https://peaceful-kirch-85c108.netlify.app/.netlify/functions/refresh-token',
-      { method: 'POST', mode: 'no-cors' },
-    ).then(response => {
-      console.log(response, 'heyhey');
-    });
+    createTask();
   }, []);
 
   const reposListProps = {
@@ -62,6 +58,17 @@ export function HomePage({
     error,
     repos,
   };
+  const createTask = async () => {
+    const { access_token } = await teamleader.getTokens();
+
+    teamleader.createTask(access_token, {
+      description: 'My first task',
+      due_on: '2021-02-02',
+      work_type_id: '1',
+    }).then(response => {
+      console.log(response);
+    });
+  }
 
   return (
     <article>
