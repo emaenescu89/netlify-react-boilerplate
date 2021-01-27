@@ -1,6 +1,6 @@
 const Teamleader = () => {
   const createTask = async (token, body) => {
-    const response = await fetch('http://localhost:9000/.netlify/functions/create-task',
+    const response = await fetch(`${process.env.REACT_APP_LAMBDA_URL}create-task`,
       {
         method: 'POST',
         headers: {
@@ -15,7 +15,7 @@ const Teamleader = () => {
   };
 
   const getTokens = async () => {
-    const response = await fetch('http://localhost:9000/.netlify/functions/get-tokens',
+    const response = await fetch(`${process.env.REACT_APP_LAMBDA_URL}get-tokens`,
       {
         method: 'GET',
       },
