@@ -20,14 +20,12 @@ exports.handler = async event => {
     }),
     headers: {
       'Content-type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
   };
 
   return fetch(API_ENDPOINT, options)
-    .then(response => {
-      return response.json();
-    })
+    .then(response => response.json())
     .then(json => {
       const { data } = json;
 

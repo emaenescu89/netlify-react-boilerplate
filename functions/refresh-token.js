@@ -7,7 +7,9 @@ const client = new faunadb.Client({
   secret: process.env.REACT_APP_FAUNA_SECRET,
 });
 
-const API_ENDPOINT = `${process.env.REACT_APP_TEAMLEADER_APP}oauth2/access_token`;
+const API_ENDPOINT = `${
+  process.env.REACT_APP_TEAMLEADER_APP
+}oauth2/access_token`;
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -23,26 +25,16 @@ const authData = {
  * Save generated tokens in the DB
  * @param {*} data
  */
-const updateTokens = data => {
-  return client.query(
-    q.Update(
-      q.Ref(q.Collection('tokens'), '288792223626035713'),
-      { data },
-    )
+const updateTokens = data =>
+  client.query(
+    q.Update(q.Ref(q.Collection('tokens'), '288792223626035713'), { data }),
   );
-};
 
 /**
  * Get refresh token from DB
  */
 const getRefreshToken = async () => {
-  const response = await client.query(
-    q.Get(
-      q.Match(
-        q.Index('refreshToken')
-      )
-    )
-  );
+  const response = await client.query(q.Get(q.Match(q.Index('refreshToken'))));
 
   return response.data.refreshToken;
 };
@@ -59,11 +51,9 @@ exports.handler = async () => {
   };
 
   return fetch(API_ENDPOINT, options)
-    .then(response => {
-      return response.json();
-    })
+    .then(response => response.json())
     .then(async json => {
-      console.log(json)
+      console.log(json);
       if (json.errors) {
         return {
           statusCode: json.errors[0].status,
@@ -74,7 +64,10 @@ exports.handler = async () => {
 
       const { access_token, refresh_token } = json;
 
-      await updateTokens({ accessToken: access_token, refreshToken: refresh_token });
+      await updateTokens({
+        accessToken: access_token,
+        refreshToken: refresh_token,
+      });
 
       return {
         statusCode: 200,

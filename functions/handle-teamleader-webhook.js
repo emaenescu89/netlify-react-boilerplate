@@ -1,4 +1,11 @@
 import fetch from 'node-fetch';
+import faunadb from 'faunadb'; /* Import faunaDB sdk */
+
+/* configure faunaDB Client with our secret */
+const q = faunadb.query;
+const client = new faunadb.Client({
+  secret: process.env.REACT_APP_FAUNA_SECRET,
+});
 
 const API_ENDPOINT = `${process.env.REACT_APP_TEAMLEADER_API}tasks.create`;
 const headers = {
@@ -9,15 +16,9 @@ const headers = {
 };
 
 const getAccessToken = async () => {
-  const response = await client.query(
-    q.Get(
-      q.Match(
-        q.Index('accessToken')
-      )
-    )
-  );
+  const response = await client.query(q.Get(q.Match(q.Index('accessToken'))));
   return response.data.accessToken;
-}
+};
 
 exports.handler = async event => {
   console.log(event);
@@ -32,14 +33,12 @@ exports.handler = async event => {
     }),
     headers: {
       'Content-type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
   };
 
   return fetch(API_ENDPOINT, options)
-    .then(response => {
-      return response.json();
-    })
+    .then(response => response.json())
     .then(json => {
       const { data } = json;
 

@@ -49,4 +49,7 @@ module.exports = require('./webpack.base.babel')({
   performance: {
     hints: false,
   },
+  node: {
+    fs: 'empty',
+  },
 });

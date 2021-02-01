@@ -12,15 +12,9 @@ const headers = {
 };
 
 const getAccessToken = async () => {
-  const response = await client.query(
-    q.Get(
-      q.Match(
-        q.Index('accessToken')
-      )
-    )
-  );
+  const response = await client.query(q.Get(q.Match(q.Index('accessToken'))));
   return response.data.accessToken;
-}
+};
 
 exports.handler = async () => {
   try {
@@ -30,11 +24,11 @@ exports.handler = async () => {
       body: JSON.stringify({ accessToken }),
       headers,
     };
-  } catch(error) {
+  } catch (error) {
     return {
       statusCode: 400,
       body: JSON.stringify(error),
       headers,
-    }
+    };
   }
 };
