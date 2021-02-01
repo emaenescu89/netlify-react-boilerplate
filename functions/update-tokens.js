@@ -10,7 +10,7 @@ const getRefreshToken = async () => {
   const response = await client.query(
     q.Get(
       q.Match(
-        q.Index('refresh_token')
+        q.Index('refreshToken')
       )
     )
   );

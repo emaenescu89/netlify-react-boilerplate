@@ -11,23 +11,23 @@ const headers = {
   'Access-Control-Allow-Methods': 'GET',
 };
 
-const getTokens = async () => {
+const getAccessToken = async () => {
   const response = await client.query(
     q.Get(
       q.Match(
-        q.Index('refresh_token')
+        q.Index('accessToken')
       )
     )
   );
-  return response.data;
+  return response.data.accessToken;
 }
 
 exports.handler = async () => {
   try {
-    const data = await getTokens();
+    const accessToken = await getAccessToken();
     return {
       statusCode: 200,
-      body: JSON.stringify(data),
+      body: JSON.stringify({ accessToken }),
       headers,
     };
   } catch(error) {

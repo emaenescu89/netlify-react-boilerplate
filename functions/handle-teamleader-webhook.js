@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const API_ENDPOINT = `${process.env.REACT_APP_TEAMLEADER_API}webhooks.register`;
+const API_ENDPOINT = `${process.env.REACT_APP_TEAMLEADER_API}tasks.create`;
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -8,40 +8,52 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-exports.handler = async event => {
+const getAccessToken = async () => {
+  const response = await client.query(
+    q.Get(
+      q.Match(
+        q.Index('accessToken')
+      )
+    )
+  );
+  return response.data.accessToken;
+}
 
+exports.handler = async event => {
+  console.log(event);
+  const accessToken = await getAccessToken();
+  // const body = JSON.parse(event.body);
   const options = {
     method: 'POST',
     body: JSON.stringify({
-      url: '',
+      description: 'My first task',
       due_on: '2021-02-02',
       work_type_id: 'b75adf33-cdd5-0a9b-ae58-031db18509c1',
     }),
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Content-type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
     },
   };
 
   return fetch(API_ENDPOINT, options)
     .then(response => {
-      console.log(response);
       return response.json();
     })
     .then(json => {
       const { data } = json;
-      console.log(json);
-      if (json.statusCode === 200) {
+
+      if (json.errors) {
         return {
-          statusCode: 200,
-          body: JSON.stringify(data),
+          statusCode: json.errors[0].status,
+          body: JSON.stringify(json.errors),
           headers,
-        }
+        };
       }
 
       return {
-        statusCode: 400,
-        body: JSON.stringify(json),
+        statusCode: 200,
+        body: JSON.stringify(data),
         headers,
       };
     })

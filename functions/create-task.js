@@ -7,10 +7,10 @@ const headers = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
-console.log(process.env);
+
 exports.handler = async event => {
   const body = JSON.parse(event.body);
-  const { description, token } = body;
+  const { accessToken, description } = body;
   const options = {
     method: 'POST',
     body: JSON.stringify({
@@ -19,8 +19,8 @@ exports.handler = async event => {
       work_type_id: 'b75adf33-cdd5-0a9b-ae58-031db18509c1',
     }),
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Content-type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
     },
   };
 
@@ -30,17 +30,18 @@ exports.handler = async event => {
     })
     .then(json => {
       const { data } = json;
-      if (json.statusCode === 200) {
+
+      if (json.errors) {
         return {
-          statusCode: 200,
-          body: JSON.stringify(data),
+          statusCode: json.errors[0].status,
+          body: JSON.stringify(json.errors),
           headers,
-        }
+        };
       }
 
       return {
-        statusCode: 400,
-        body: JSON.stringify(json),
+        statusCode: 200,
+        body: JSON.stringify(data),
         headers,
       };
     })
