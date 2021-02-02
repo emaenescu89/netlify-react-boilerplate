@@ -1,3 +1,5 @@
+// import fetch from 'node-fetch';
+// import faunadb from 'faunadb'; /* Import faunaDB sdk */
 const fetch = require('node-fetch');
 const faunadb = require('faunadb');
 
@@ -21,15 +23,16 @@ const getAccessToken = async () => {
 };
 
 exports.handler = async event => {
-  console.log(event);
   const accessToken = await getAccessToken();
-  // const body = JSON.parse(event.body);
+  const body = JSON.parse(event.body);
+  console.log(body);
   const options = {
     method: 'POST',
     body: JSON.stringify({
-      description: 'My first task',
-      due_on: '2021-02-02',
-      work_type_id: 'b75adf33-cdd5-0a9b-ae58-031db18509c1',
+      customer: body.subject,
+      description: 'Pool customer',
+      due_on: '2021-02-10',
+      work_type_id: '3541cc99-33c0-0d74-b15c-f6e04b850fc1',
     }),
     headers: {
       'Content-type': 'application/json',
