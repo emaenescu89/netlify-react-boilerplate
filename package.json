@@ -12,6 +12,7 @@
   },
   "author": "Max Stoiber",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "analyze:clean": "rimraf stats.json",
     "bootstrap": "node ./scripts/bootstrap-fauna-database.js",
