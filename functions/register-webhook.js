@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
-import faunadb from 'faunadb'; /* Import faunaDB sdk */
+const fetch = require('node-fetch');
+const faunadb = require('faunadb');
 
 /* configure faunaDB Client with our secret */
 const q = faunadb.query;
@@ -7,8 +7,12 @@ const client = new faunadb.Client({
   secret: process.env.REACT_APP_FAUNA_SECRET,
 });
 
-const API_ENDPOINT_REGISTER = `${process.env.REACT_APP_TEAMLEADER_API}webhooks.register`;
-const API_ENDPOINT_LIST = `${process.env.REACT_APP_TEAMLEADER_API}webhooks.list`;
+const API_ENDPOINT_REGISTER = `${
+  process.env.REACT_APP_TEAMLEADER_API
+}webhooks.register`;
+const API_ENDPOINT_LIST = `${
+  process.env.REACT_APP_TEAMLEADER_API
+}webhooks.list`;
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -21,7 +25,7 @@ const getAccessToken = async () => {
   return response.data.accessToken;
 };
 
-const getWebhooks = (accessToken) => {
+const getWebhooks = accessToken => {
   const options = {
     method: 'GET',
     headers: {
@@ -32,7 +36,6 @@ const getWebhooks = (accessToken) => {
 
   return fetch(API_ENDPOINT_LIST, options).then(response => response.json());
 };
-
 
 exports.handler = async event => {
   const body = JSON.parse(event.body);
@@ -50,13 +53,10 @@ exports.handler = async event => {
     },
   };
   const { data } = await getWebhooks(accessToken);
-  if (!data.find((item) => item.url === url)) {
+  if (!data.find(item => item.url === url)) {
     return fetch(API_ENDPOINT_REGISTER, options)
-      .then(response => {
-        return response.json();
-      })
+      .then(response => response.json())
       .then(json => {
-
         if (json && json.errors) {
           return {
             statusCode: json.errors[0].status,

@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
 const API_ENDPOINT = `${process.env.REACT_APP_TEAMLEADER_API}tasks.create`;
 const headers = {

@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
-import faunadb from 'faunadb'; /* Import faunaDB sdk */
+const fetch = require('node-fetch');
+const faunadb = require('faunadb');
 
 /* configure faunaDB Client with our secret */
 const q = faunadb.query;
