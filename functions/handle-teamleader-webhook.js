@@ -1,15 +1,10 @@
-// import fetch from 'node-fetch';
-// import faunadb from 'faunadb'; /* Import faunaDB sdk */
 const fetch = require('node-fetch');
-const faunadb = require('faunadb');
 
-/* configure faunaDB Client with our secret */
-const q = faunadb.query;
-const client = new faunadb.Client({
-  secret: process.env.REACT_APP_FAUNA_SECRET,
-});
+const { LAMBDA_URL } = process.env;
 
-const API_ENDPOINT = `${process.env.REACT_APP_TEAMLEADER_API}tasks.create`;
+const CREATE_TASK_URL = `${LAMBDA_URL}create-task`;
+const REFRESH_TOKEN_URL = `${LAMBDA_URL}refresh-token`;
+
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -17,17 +12,9 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-const getAccessToken = async () => {
-  const response = await client.query(q.Get(q.Match(q.Index('accessToken'))));
-  return response.data.accessToken;
-};
-
-exports.handler = async event => {
-  const accessToken = await getAccessToken();
-  const body = JSON.parse(event.body);
-  console.log(body);
-  const options = {
-    method: 'POST',
+// Call create task endpoint
+const createTask = async body => {
+  return await fetch(CREATE_TASK_URL, {
     body: JSON.stringify({
       customer: body.subject,
       description: 'Pool customer',
@@ -35,33 +22,41 @@ exports.handler = async event => {
       work_type_id: '3541cc99-33c0-0d74-b15c-f6e04b850fc1',
     }),
     headers: {
-      'Content-type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
     },
-  };
+    method: 'POST',
+  });
+};
 
-  return fetch(API_ENDPOINT, options)
-    .then(response => response.json())
-    .then(json => {
-      const { data } = json;
+exports.handler = async event => {
+  // Try to create a new task in teamleader
+  const body = JSON.parse(event.body);
 
-      if (json.errors) {
+  const resCreateTask = await createTask(body);
+
+  if (resCreateTask.statusCode === 200) {
+    return {
+      statusCode: 200,
+      body: 'Task created',
+      headers,
+    };
+  } else if (resCreateTask.statusCode === 401) {
+    // Refresh token
+    const { accessToken } = await fetch(REFRESH_TOKEN_URL);
+    if (accessToken) {
+      const resCreateTask2 = await fetch(CREATE_TASK_URL, options);
+      if (resCreateTask2.statusCode === 200) {
         return {
-          statusCode: json.errors[0].status,
-          body: JSON.stringify(json.errors),
+          statusCode: 200,
+          body: 'Task created',
           headers,
         };
       }
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify(data),
-        headers,
-      };
-    })
-    .catch(error => ({
-      statusCode: 422,
-      body: 'something went wrong with teamleader',
-      headers,
-    }));
+    }
+  }
+  return {
+    statusCode: 422,
+    body: 'Something went wrong',
+    headers,
+  };
 };

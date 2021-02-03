@@ -1,60 +1,61 @@
 const fetch = require('node-fetch');
 const faunadb = require('faunadb');
 
+// Environment variables
+const { FAUNA_SECRET, TEAMLEADER_API_URL } = process.env;
+
 /* configure faunaDB Client with our secret */
 const q = faunadb.query;
 const client = new faunadb.Client({
-  secret: process.env.REACT_APP_FAUNA_SECRET,
+  secret: FAUNA_SECRET,
 });
 
-const API_ENDPOINT_REGISTER = `${
-  process.env.REACT_APP_TEAMLEADER_API
-}webhooks.register`;
-const API_ENDPOINT_LIST = `${
-  process.env.REACT_APP_TEAMLEADER_API
-}webhooks.list`;
+const REGISTER_WEBHOOK_URL = `${TEAMLEADER_API_URL}webhooks.register`;
+const LIST_WEBHOOKS_URL = `${TEAMLEADER_API_URL}webhooks.list`;
+const contentType = 'application/json';
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
+  'Content-Type': contentType,
 };
 
-const getAccessToken = async () => {
+// Get access token from DB
+const queryAccessToken = async () => {
   const response = await client.query(q.Get(q.Match(q.Index('accessToken'))));
   return response.data.accessToken;
 };
 
-const getWebhooks = accessToken => {
-  const options = {
+// Get Temaleader registered webhooks
+const getRegisteredWebhooks = accessToken => {
+  return fetch(LIST_WEBHOOKS_URL, {
     method: 'GET',
     headers: {
-      'Content-type': 'application/json',
+      'Content-type': contentType,
       Authorization: `Bearer ${accessToken}`,
     },
-  };
-
-  return fetch(API_ENDPOINT_LIST, options).then(response => response.json());
+  }).then(response => response.json());
 };
 
 exports.handler = async event => {
   const body = JSON.parse(event.body);
-  const accessToken = await getAccessToken();
+  const accessToken = await queryAccessToken();
   const { types, url } = body;
-  const options = {
-    method: 'POST',
-    body: JSON.stringify({
-      types,
-      url,
-    }),
-    headers: {
-      'Content-type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
-  const { data } = await getWebhooks(accessToken);
-  if (!data.find(item => item.url === url)) {
-    return fetch(API_ENDPOINT_REGISTER, options)
+  const { data } = await getRegisteredWebhooks(accessToken);
+
+  // Register webhook only if it's not registered
+  if (!data || !data.find(item => item.url === url)) {
+    return fetch(REGISTER_WEBHOOK_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        types,
+        url,
+      }),
+      headers: {
+        'Content-type': contentType,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
       .then(response => response.json())
       .then(json => {
         if (json && json.errors) {

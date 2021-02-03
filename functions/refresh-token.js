@@ -1,23 +1,28 @@
 const fetch = require('node-fetch');
 const faunadb = require('faunadb');
 
+// Environment variables
+const {
+  FAUNA_SECRET,
+  TEAMLEADER_APP_URL,
+  TEAMLEADER_CLIENT_ID,
+  TEAMLEADER_CLIENT_SECRET,
+} = process.env;
+
 /* configure faunaDB Client with our secret */
 const q = faunadb.query;
 const client = new faunadb.Client({
-  secret: process.env.REACT_APP_FAUNA_SECRET,
+  secret: FAUNA_SECRET,
 });
-
-const API_ENDPOINT = `${
-  process.env.REACT_APP_TEAMLEADER_APP
-}oauth2/access_token`;
+const API_ENDPOINT = `${TEAMLEADER_APP_URL}oauth2/access_token`;
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'GET',
 };
 const authData = {
-  client_id: process.env.REACT_APP_TEAMLEADER_CLIENT_ID,
-  client_secret: process.env.REACT_APP_TEAMLEADER_CLIENT_SECRET,
+  client_id: TEAMLEADER_CLIENT_ID,
+  client_secret: TEAMLEADER_CLIENT_SECRET,
   grant_type: 'refresh_token',
 };
 
@@ -25,23 +30,23 @@ const authData = {
  * Save generated tokens in the DB
  * @param {*} data
  */
-const updateTokens = data =>
-  client.query(
-    q.Update(q.Ref(q.Collection('tokens'), '288792223626035713'), { data }),
+const queryUpdateTokens = data => {
+  return client.query(
+    q.Update(q.Ref(q.Collection('tokens'), '288792223626035713'), { data })
   );
+};
 
 /**
  * Get refresh token from DB
  */
-const getRefreshToken = async () => {
+const queryRefreshToken = async () => {
   const response = await client.query(q.Get(q.Match(q.Index('refreshToken'))));
 
   return response.data.refreshToken;
 };
 
 exports.handler = async () => {
-  const refreshToken = await getRefreshToken();
-
+  const refreshToken = await queryRefreshToken();
   const options = {
     method: 'POST',
     body: JSON.stringify({ ...authData, refresh_token: refreshToken }),
@@ -50,10 +55,12 @@ exports.handler = async () => {
     },
   };
 
+  // Refresh Teamleader tokens
   return fetch(API_ENDPOINT, options)
-    .then(response => response.json())
+    .then(response => {
+      return response.json();
+    })
     .then(async json => {
-      console.log(json);
       if (json.errors) {
         return {
           statusCode: json.errors[0].status,
@@ -64,7 +71,7 @@ exports.handler = async () => {
 
       const { access_token, refresh_token } = json;
 
-      await updateTokens({
+      await queryUpdateTokens({
         accessToken: access_token,
         refreshToken: refresh_token,
       });
