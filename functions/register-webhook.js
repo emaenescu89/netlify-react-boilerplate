@@ -27,15 +27,14 @@ const queryAccessToken = async () => {
 };
 
 // Get Temaleader registered webhooks
-const getRegisteredWebhooks = accessToken => {
-  return fetch(LIST_WEBHOOKS_URL, {
+const getRegisteredWebhooks = accessToken =>
+  fetch(LIST_WEBHOOKS_URL, {
     method: 'GET',
     headers: {
       'Content-type': contentType,
       Authorization: `Bearer ${accessToken}`,
     },
   }).then(response => response.json());
-};
 
 exports.handler = async event => {
   const body = JSON.parse(event.body);

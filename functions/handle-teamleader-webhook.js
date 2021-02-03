@@ -13,8 +13,8 @@ const headers = {
 };
 
 // Call create task endpoint
-const createTask = async body => {
-  return await fetch(CREATE_TASK_URL, {
+const createTask = async body =>
+  await fetch(CREATE_TASK_URL, {
     body: JSON.stringify({
       customer: body.subject,
       description: 'Pool customer',
@@ -26,21 +26,21 @@ const createTask = async body => {
     },
     method: 'POST',
   });
-};
 
 exports.handler = async event => {
   // Try to create a new task in teamleader
   const body = JSON.parse(event.body);
 
   const resCreateTask = await createTask(body);
-
+  console.log(resCreateTask)
   if (resCreateTask.statusCode === 200) {
     return {
       statusCode: 200,
       body: 'Task created',
       headers,
     };
-  } else if (resCreateTask.statusCode === 401) {
+  }
+  if (resCreateTask.statusCode === 401) {
     // Refresh token
     const { accessToken } = await fetch(REFRESH_TOKEN_URL);
     if (accessToken) {

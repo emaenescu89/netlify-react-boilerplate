@@ -30,11 +30,10 @@ const authData = {
  * Save generated tokens in the DB
  * @param {*} data
  */
-const queryUpdateTokens = data => {
-  return client.query(
-    q.Update(q.Ref(q.Collection('tokens'), '288792223626035713'), { data })
+const queryUpdateTokens = data =>
+  client.query(
+    q.Update(q.Ref(q.Collection('tokens'), '288792223626035713'), { data }),
   );
-};
 
 /**
  * Get refresh token from DB
@@ -57,9 +56,7 @@ exports.handler = async () => {
 
   // Refresh Teamleader tokens
   return fetch(API_ENDPOINT, options)
-    .then(response => {
-      return response.json();
-    })
+    .then(response => response.json())
     .then(async json => {
       if (json.errors) {
         return {

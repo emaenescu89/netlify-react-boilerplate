@@ -35,7 +35,7 @@ exports.handler = async event => {
       customer: body.subject,
       description: 'Pool customer',
       due_on: '2021-02-10',
-      work_type_id: '3541cc99-33c0-0d74-b15c-f6e04b850fc1',
+      work_type_id: '3541cc99-33c0-0d74-b15c-f6e04b850fc1"',
     }),
     headers: {
       'Content-type': 'application/json',
@@ -44,6 +44,7 @@ exports.handler = async event => {
   })
     .then(response => response.json())
     .then(json => {
+      console.olog(json);
       const { data } = json;
 
       if (json.errors) {
