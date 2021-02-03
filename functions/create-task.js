@@ -1,3 +1,5 @@
+// import fetch from 'node-fetch';
+// import faunadb from 'faunadb';
 const fetch = require('node-fetch');
 const faunadb = require('faunadb');
 
@@ -7,10 +9,10 @@ const { FAUNA_SECRET, TEAMLEADER_API_URL } = process.env;
 /* configure faunaDB Client with our secret */
 const q = faunadb.query;
 const client = new faunadb.Client({
-  secret: FAUNA_SECRET,
+  secret: process.env.FAUNA_SECRET,
 });
 
-const CREATE_TASK_URL = `${TEAMLEADER_API_URL}tasks.create`;
+const CREATE_TASK_URL = `${process.env.TEAMLEADER_API_URL}tasks.create`;
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -31,12 +33,7 @@ exports.handler = async event => {
   // Create Teamleader Task
   return fetch(CREATE_TASK_URL, {
     method: 'POST',
-    body: JSON.stringify({
-      customer: body.subject,
-      description: 'Pool customer',
-      due_on: '2021-02-10',
-      work_type_id: '3541cc99-33c0-0d74-b15c-f6e04b850fc1"',
-    }),
+    body: JSON.stringify(body),
     headers: {
       'Content-type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
@@ -44,9 +41,8 @@ exports.handler = async event => {
   })
     .then(response => response.json())
     .then(json => {
-      console.olog(json);
+      console.log(json);
       const { data } = json;
-
       if (json.errors) {
         return {
           statusCode: json.errors[0].status,

@@ -1,3 +1,5 @@
+// import fetch from 'node-fetch';
+// import faunadb from 'faunadb';
 const fetch = require('node-fetch');
 const faunadb = require('faunadb');
 
@@ -12,17 +14,17 @@ const {
 /* configure faunaDB Client with our secret */
 const q = faunadb.query;
 const client = new faunadb.Client({
-  secret: FAUNA_SECRET,
+  secret: process.env.FAUNA_SECRET,
 });
-const API_ENDPOINT = `${TEAMLEADER_APP_URL}oauth2/access_token`;
+const API_ENDPOINT = `${process.env.TEAMLEADER_APP_URL}oauth2/access_token`;
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'GET',
 };
 const authData = {
-  client_id: TEAMLEADER_CLIENT_ID,
-  client_secret: TEAMLEADER_CLIENT_SECRET,
+  client_id: process.env.TEAMLEADER_CLIENT_ID,
+  client_secret: process.env.TEAMLEADER_CLIENT_SECRET,
   grant_type: 'refresh_token',
 };
 

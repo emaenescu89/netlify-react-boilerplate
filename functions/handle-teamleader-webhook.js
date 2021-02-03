@@ -1,9 +1,10 @@
+// import fetch from 'node-fetch';
 const fetch = require('node-fetch');
 
 const { LAMBDA_URL } = process.env;
 
-const CREATE_TASK_URL = `${LAMBDA_URL}create-task`;
-const REFRESH_TOKEN_URL = `${LAMBDA_URL}refresh-token`;
+const CREATE_TASK_URL = `${process.env.LAMBDA_URL}create-task`;
+const REFRESH_TOKEN_URL = `${process.env.LAMBDA_URL}refresh-token`;
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -13,8 +14,8 @@ const headers = {
 };
 
 // Call create task endpoint
-const createTask = async body => {
-  return fetch(CREATE_TASK_URL, {
+const createTask = async body =>
+  fetch(CREATE_TASK_URL, {
     body: JSON.stringify({
       customer: body.subject,
       description: 'Pool customer',
@@ -26,27 +27,29 @@ const createTask = async body => {
     },
     method: 'POST',
   });
-}
 
 exports.handler = async event => {
   // Try to create a new task in teamleader
   const body = JSON.parse(event.body);
 
   const resCreateTask = await createTask(body);
-  console.log(resCreateTask);
-  if (resCreateTask.statusCode === 200) {
+
+  if (resCreateTask.status === 200) {
     return {
       statusCode: 200,
       body: 'Task created',
       headers,
     };
   }
-  if (resCreateTask.statusCode === 401) {
+
+  if (resCreateTask.status === 401) {
     // Refresh token
     const { accessToken } = await fetch(REFRESH_TOKEN_URL);
+
     if (accessToken) {
-      const resCreateTask2 = await fetch(CREATE_TASK_URL, options);
-      if (resCreateTask2.statusCode === 200) {
+      const resCreateTask2 = await createTask(body);
+      console.log(resCreateTask2)
+      if (resCreateTask2.status === 200) {
         return {
           statusCode: 200,
           body: 'Task created',
